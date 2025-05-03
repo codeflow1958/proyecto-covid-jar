@@ -13,28 +13,28 @@ public class AppProperties {
     private static final Logger logger = LogManager.getLogger(AppProperties.class);
 
     static {
-        // *** ADD THIS CODE ***
-        System.out.println("Classpath: " + System.getProperty("java.class.path"));
+        
+        System.out.println("Classpath: " + System.getProperty("java.class.path"));// Imprime el classpath para depuración
         try {
-            Enumeration<java.net.URL> resources = AppProperties.class.getClassLoader().getResources("");
+            Enumeration<java.net.URL> resources = AppProperties.class.getClassLoader().getResources(""); // Obtiene todas las URLs de los recursos
             while (resources.hasMoreElements()) {
-                System.out.println("Resource URL: " + resources.nextElement());
+                System.out.println("Resource URL: " + resources.nextElement());// Imprime cada URL de los recursos
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Imprime la traza de la excepción si hay un error al obtener los recursos
         }
-        // *** END OF ADDED CODE ***
+        
 
         try (InputStream input = AppProperties.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
-                String errorMessage = "⚠️ config.properties not found in classpath";
+                String errorMessage = "config.properties no se encontraron";
                 logger.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
             properties.load(input);
-            logger.info("✅ config.properties loaded successfully");
+            logger.info("secargarojn bien las  propiedades");
         } catch (IOException e) {
-            String errorMessage = "❌ Failed to load config.properties";
+            String errorMessage = "las propiedades fallaron";
             logger.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);
         }

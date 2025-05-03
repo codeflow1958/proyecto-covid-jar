@@ -15,20 +15,21 @@ public class ExecutionRepository {
     public boolean hasExecuted(LocalDate date, String countryIso) {
         EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
         try {
+             // Crea una consulta para contar las ejecuciones para la fecha y el país
             Long count = em.createQuery(
                     "SELECT COUNT(e) FROM ExecutionEntity e WHERE e.executionDate = :date AND e.countryIso = :countryIso", Long.class)
                     .setParameter("date", date)
                     .setParameter("countryIso", countryIso)
                     .getSingleResult();
-            return count > 0;
+            return count > 0; // Devuelve true si ya existe al menos una ejecución
         } catch (NoResultException e) {
-            logger.info("No previous execution found for {} on {}", countryIso, date);
+            logger.info("no se encontraron ejecuciones previas", countryIso, date);
             return false;
         } catch (Exception e) {
-            logger.error("Error checking execution for {} on {}: {}", countryIso, date, e.getMessage(), e);
-            return false; // Or throw an exception, depending on your error handling policy
+            logger.error(" error al verificar la ejecución", countryIso, date, e.getMessage(), e);
+            return false; // O lanza una excepción, dependiendo de tu política de manejo de errores
         } finally {
-            em.close();
+            em.close(); // Cierra el EntityManager
         }
     }
 
@@ -42,12 +43,12 @@ public class ExecutionRepository {
             execution.setCountryIso(countryIso);
             em.persist(execution);
             tx.commit();
-            logger.info("Execution marked for {} on {}", countryIso, date);
+            logger.info("se marco la ejeccucion", countryIso, date);
         } catch (Exception e) {
             if (tx.isActive()) {
                 tx.rollback();
             }
-            logger.error("Error marking execution for {} on {}: {}", countryIso, date, e.getMessage(), e);
+            logger.error("Registra un error al marcar la ejecución", countryIso, date, e.getMessage(), e);
         } finally {
             em.close();
         }

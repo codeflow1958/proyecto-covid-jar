@@ -24,11 +24,11 @@ public class Scheduler {
 
     public void iniciar() {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        int delaySeconds = AppProperties.getInt("scheduler.initial.delay", 15);
-        String reportDateStr = AppProperties.get("covid.report.date");
+        int delaySeconds = AppProperties.getInt("la espera de 15", 15); // Obtiene el delay desde config.properties
+        String reportDateStr = AppProperties.get("obtenemos la fecha des de el confi.propietis"); // Obtiene la fecha desde config.properties
 
         if (reportDateStr == null || reportDateStr.trim().isEmpty()) {
-            logger.error("❌ covid.report.date is not configured in config.properties. Scheduler will not run.");
+            logger.error("la fecha no esta configurada");// Registra un error si la fecha no está configurada
             return; // Stop execution if date is missing
         }
 
@@ -36,12 +36,12 @@ public class Scheduler {
         try {
             reportDate = LocalDate.parse(reportDateStr, dateFormatter);
         } catch (java.time.format.DateTimeParseException e) {
-            logger.error("❌ Invalid date format in config.properties: '{}'.  Expected 'yyyy-MM-dd'.  Scheduler will not run.", reportDateStr, e);
-            return; // Stop execution if date format is wrong
+            logger.error("formato de la fecha incorrecto", reportDateStr, e); // Registra un error si el formato de la fecha es incorrecto
+            return; // se para la ejecución si no hay fecha
         }
 
         executor.schedule(() -> {
-            logger.info("▶️ Starting API fetch...");
+            logger.info("se inicia la API");
 
             processCountry("GTM", reportDate);
             processCountry("USA", reportDate);
@@ -52,14 +52,14 @@ public class Scheduler {
 
     private void processCountry(String countryIso, LocalDate reportDate) {
         if (executionRepository.hasExecuted(reportDate, countryIso)) {
-            logger.info("  ⏩ Country {} already processed on {}. Skipping.", countryIso, reportDate);
+            logger.info(" salta el pais si ya se proceso", countryIso, reportDate); // Registra que se omite el país si ya se procesó
             return;
         }
 
-        logger.info("  ▶️ Processing {} for {}", countryIso, reportDate);
-        service.fetchAndPersistCovidData(countryIso, reportDate.toString());
+        logger.info("inicia el proceso del pai", countryIso, reportDate);  // Registra el inicio del procesamiento para el país
+        service.fetchAndPersistCovidData(countryIso, reportDate.toString()); // Obtiene y guarda los datos
 
-        executionRepository.markExecuted(reportDate, countryIso);
-        logger.info("  ✅ Processed and marked {} for {}", countryIso, reportDate);
+        executionRepository.markExecuted(reportDate, countryIso); // Marca la ejecución como completada
+        logger.info("  proceso completo", countryIso, reportDate);
     }
 }
