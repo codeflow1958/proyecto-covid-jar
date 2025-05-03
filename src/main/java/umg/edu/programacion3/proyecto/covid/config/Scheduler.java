@@ -24,27 +24,27 @@ public class Scheduler {
 
     public void iniciar() {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        int delaySeconds = AppProperties.getInt("la espera de 15", 15); // Obtiene el delay desde config.properties
-        String reportDateStr = AppProperties.get("obtenemos la fecha des de el confi.propietis"); // Obtiene la fecha desde config.properties
+        int delaySeconds = AppProperties.getInt("scheduler.initial.delay", 15); // Obtiene el delay desde config.properties
+        String reportDateStr = AppProperties.get("covid.report.date"); // Obtiene la fecha desde config.properties
 
         if (reportDateStr == null || reportDateStr.trim().isEmpty()) {
-            logger.error("la fecha no esta configurada");// Registra un error si la fecha no está configurada
-            return; // Stop execution if date is missing
+            logger.error("ERROR: La fecha del reporte (covid.report.date) no está configurada en config.properties. El Scheduler no se ejecutará.");
+            return; // Detiene la ejecución si no hay fecha
         }
 
         LocalDate reportDate;
         try {
-            reportDate = LocalDate.parse(reportDateStr, dateFormatter);
+            reportDate = LocalDate.parse(reportDateStr, dateFormatter); // Convierte la fecha de String a LocalDate
         } catch (java.time.format.DateTimeParseException e) {
-            logger.error("formato de la fecha incorrecto", reportDateStr, e); // Registra un error si el formato de la fecha es incorrecto
-            return; // se para la ejecución si no hay fecha
+            logger.error("ERROR: Formato de fecha inválido en config.properties: '{}'. Se esperaba el formato 'yyyy-MM-dd'. El Scheduler no se ejecutará.", reportDateStr, e);
+            return; // Detiene la ejecución si el formato es incorrecto
         }
 
         executor.schedule(() -> {
-            logger.info("se inicia la API");
+            logger.info("INICIO: Iniciando la obtención de datos de la API...");
 
-            processCountry("GTM", reportDate);
-            processCountry("USA", reportDate);
+            processCountry("GTM", reportDate); // Procesa los datos para Guatemala
+            processCountry("USA", reportDate); // Procesa los datos para USA
 
             executor.shutdown();
         }, delaySeconds, TimeUnit.SECONDS);
@@ -52,14 +52,14 @@ public class Scheduler {
 
     private void processCountry(String countryIso, LocalDate reportDate) {
         if (executionRepository.hasExecuted(reportDate, countryIso)) {
-            logger.info(" salta el pais si ya se proceso", countryIso, reportDate); // Registra que se omite el país si ya se procesó
+            logger.info("OMITIDO: El país {} ya fue procesado el {}. Se omite.", countryIso, reportDate);
             return;
         }
 
-        logger.info("inicia el proceso del pai", countryIso, reportDate);  // Registra el inicio del procesamiento para el país
-        service.fetchAndPersistCovidData(countryIso, reportDate.toString()); // Obtiene y guarda los datos
+        logger.info("PROCESANDO: Iniciando el procesamiento de {} para el {}", countryIso, reportDate);
+        service.fetchAndPersistCovidData(countryIso, reportDate.toString());
 
-        executionRepository.markExecuted(reportDate, countryIso); // Marca la ejecución como completada
-        logger.info("  proceso completo", countryIso, reportDate);
+        executionRepository.markExecuted(reportDate, countryIso);
+        logger.info("COMPLETADO: Procesamiento completado y registrado para {} en el {}", countryIso, reportDate);
     }
 }

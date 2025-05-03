@@ -21,32 +21,33 @@ public class ReportQueryService {
 
     public Map<String, Report> getReportsByDateAndCountry(String dateStr, String countryIso) {
         EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
-        LocalDate date = LocalDate.parse(dateStr, dateFormatter);
-        Map<String, Report> groupedReports = new TreeMap<>();
+        LocalDate date = LocalDate.parse(dateStr, dateFormatter); // Convierte la fecha de String a LocalDate
+        Map<String, Report> groupedReports = new TreeMap<>(); // Usa TreeMap para agrupar y ordenar los reportes
 
         try {
+            // Crea una consulta para obtener los reportes para la fecha y el país
             Query query = em.createQuery(
                     "SELECT r FROM Report r WHERE r.date = :date AND r.region = :countryIso", Report.class);
             query.setParameter("date", date.toString());
             query.setParameter("countryIso", countryIso);
 
-            List<Report> reports = query.getResultList();
+            List<Report> reports = query.getResultList(); // Ejecuta la consulta y obtiene los resultados
 
             for (Report report : reports) {
-                groupedReports.put(report.getProvince(), report); // Use province as key
+                groupedReports.put(report.getProvince(), report); // Usa la provincia como clave en el TreeMap
             }
 
-            logger.info("Reports found: {}", groupedReports.size());
-            groupedReports.forEach((province, report) -> logger.info("{}: {}", province, report));
+            logger.info("INFO: Se encontraron {} reportes.", groupedReports.size()); // Registra la cantidad de reportes encontrados
+            groupedReports.forEach((province, report) -> logger.info("   {}: {}", province, report)); // Registra cada reporte
 
         } catch (NoResultException e) {
-            logger.info("No reports found for {} on {}", countryIso, dateStr);
+            logger.info("INFO: No se encontraron reportes para {} en {}", countryIso, dateStr);
         } catch (Exception e) {
-            logger.error("Error fetching reports for {} on {}: {}", countryIso, dateStr, e.getMessage(), e);
+            logger.error("ERROR: Error al obtener los reportes para {} en {}: {}", countryIso, dateStr, e.getMessage(), e);
         } finally {
-            em.close();
+            em.close(); // Cierra el EntityManager
         }
 
-        return groupedReports;
+        return groupedReports; // Devuelve los reportes agrupados
     }
 }

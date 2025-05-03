@@ -11,7 +11,7 @@ public class AppProperties {
 
     private static final Properties properties = new Properties();
     private static final Logger logger = LogManager.getLogger(AppProperties.class);
-
+   // adicione esta parte
     static {
         
         System.out.println("Classpath: " + System.getProperty("java.class.path"));// Imprime el classpath para depuración
@@ -23,7 +23,7 @@ public class AppProperties {
         } catch (IOException e) {
             e.printStackTrace(); // Imprime la traza de la excepción si hay un error al obtener los recursos
         }
-        
+        // hasta aca
 
         try (InputStream input = AppProperties.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
