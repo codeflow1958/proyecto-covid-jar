@@ -36,8 +36,8 @@ public class CovidApiService {
             String jsonRegions = client.getRegions();
             RegionResponse regionResponse = gson.fromJson(jsonRegions, RegionResponse.class);
             List<RegionDto> regions = regionResponse.getData();
-            
-            for (RegionDto dto : regions) {                
+
+            for (RegionDto dto : regions) {
                 Region entity = DtoMapper.toRegion(dto);
                 em.persist(entity);
             }
